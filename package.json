@@ -1,0 +1,30 @@
+{
+  "name": "generate-dragon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.ts",
+  "scripts": {
+    "compile": "tsc -p .",
+    "start": "NODE_ENV=production node --env-file=.env build/main.js",
+    "dev": "./env-read.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chikinaN/generate-dragon.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/chikinaN/generate-dragon/issues"
+  },
+  "homepage": "https://github.com/chikinaN/generate-dragon#readme",
+  "dependencies": {
+    "@types/node": "^20.12.12",
+    "canvas": "^2.11.2",
+    "discord.js": "^14.15.2",
+    "typescript": "^5.4.5"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
