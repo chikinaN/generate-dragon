@@ -1,6 +1,7 @@
 # generate-dragon
 
 Discordのbotです。
+個人使用です
 
 ## botで使ったライブラリ
 
