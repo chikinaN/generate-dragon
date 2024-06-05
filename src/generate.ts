@@ -1,6 +1,7 @@
 import { AttachmentBuilder, ChatInputCommandInteraction, Client, Events, REST, Routes, SlashCommandBuilder, SlashCommandOptionsOnlyBuilder } from "discord.js";
 import { SendReply, GenerateText } from "./lib/send";
 import { createCanvas, loadImage, registerFont } from "canvas";
+import { GenerateDragonImage, GenerateDragonImageAndText, GenerateDragonText } from "./lib/generate";
 
 type commandType = {
   name: string;
@@ -22,30 +23,49 @@ const commands: commandType[] = [
         .setRequired(true)
       )
       .addStringOption(option => option
+        .setName('type')
+        .setDescription('contentのタイプ')
+        .setRequired(true)
+        .addChoices(
+          {name:'テキスト', value:'text'},
+          {name:'画像', value:'image'},
+          {name:'テキスト＋画像', value:'text_image'}
+        )
+      )
+      .addStringOption(option => option
         .setName('content')
         .setDescription('吹き出しのテキスト')
-        .setRequired(true)
+        .setRequired(false)
+      )
+      .addAttachmentOption(option => option
+        .setName('image')
+        .setDescription('吹き出し内の画像')
+        .setRequired(false)
       ),
-    handler: async (interaction) => {
-      const subtitle = interaction.options.getString("title")
-			const content = interaction.options.getString("content")
-			if (!subtitle || !content) return await SendReply(interaction, GenerateText(`タイトルと内容を入力してください。`))
-			const balloonImage = await loadImage('./public/img/balloon.png');
-			const dragonImage = await loadImage('./public/img/dragon.png');
-			const canvas = createCanvas(balloonImage.width, balloonImage.height);
-			const context = canvas.getContext('2d');
-			context.fillStyle = 'rgb( 255, 255, 255)';
-			context.fillRect(0, 0, canvas.width, canvas.height);
-			context.drawImage(balloonImage, 0, 0, canvas.width, canvas.height);
-			context.drawImage(dragonImage, 0, 0, canvas.width, canvas.height);
-			context.font = '90px "GenJyuuGothic-Normal", sans-serif';
-			context.fillStyle = 'black';
-			context.fillText(content, 175 + (500 - context.measureText(content).width) / 2, 358);
-			context.font = '77px "GenJyuuGothic-Normal", sans-serif';
-			context.fillText(subtitle, (canvas.width - context.measureText(subtitle).width) / 2, 844);
-			const attachment = new AttachmentBuilder(canvas.createPNGStream(), { name: 'profile-image.png' });
-      await interaction.reply({ files: [attachment] });
-    }
+      handler: async (interaction) => {
+        const subtitle = interaction.options.getString("title")
+        const content = interaction.options.getString("content")
+        const contentImgUrl = interaction.options.getAttachment("image")?.url
+        const balloonImage = await loadImage('./public/img/balloon.png');
+        const dragonImage = await loadImage('./public/img/dragon.png');
+        if (!subtitle) return await SendReply(interaction, GenerateText(`タイトルを入力してください。`))
+        switch (interaction.options.getString("type")) {
+          case "text":
+            if (!content) return await SendReply(interaction, GenerateText(`内容を入力してください。`))
+            const textAttachment = GenerateDragonText({ subtitle, content, balloonImage, dragonImage });
+            return await interaction.reply({ files: [textAttachment] });
+          case "image":
+            if (!contentImgUrl) return await SendReply(interaction, GenerateText(`画像を入力してください。`))
+            const contentImage = await loadImage(contentImgUrl);
+            const imgAttachment = GenerateDragonImage({ subtitle, content: contentImage, balloonImage, dragonImage });
+            return await interaction.reply({ files: [imgAttachment] });
+          case "text_image":
+            if (!content || !contentImgUrl) return await SendReply(interaction, GenerateText(`内容と画像を入力してください。`))
+            const figureImg = await loadImage(contentImgUrl);
+            const textImgAttachment = GenerateDragonImageAndText({ subtitle, content, contentImg: figureImg, balloonImage, dragonImage });
+            return await interaction.reply({ files: [textImgAttachment] });
+        }
+      }
   }
 ]
 
