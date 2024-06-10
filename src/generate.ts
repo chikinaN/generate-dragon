@@ -42,30 +42,30 @@ const commands: commandType[] = [
         .setDescription('吹き出し内の画像')
         .setRequired(false)
       ),
-      handler: async (interaction) => {
-        const subtitle = interaction.options.getString("title")
-        const content = interaction.options.getString("content")
-        const contentImgUrl = interaction.options.getAttachment("image")?.url
-        const balloonImage = await loadImage('./public/img/balloon.png');
-        const dragonImage = await loadImage('./public/img/dragon.png');
-        if (!subtitle) return await SendReply(interaction, GenerateText(`タイトルを入力してください。`))
-        switch (interaction.options.getString("type")) {
-          case "text":
-            if (!content) return await SendReply(interaction, GenerateText(`内容を入力してください。`))
-            const textAttachment = GenerateDragonText({ subtitle, content, balloonImage, dragonImage });
-            return await interaction.reply({ files: [textAttachment] });
-          case "image":
-            if (!contentImgUrl) return await SendReply(interaction, GenerateText(`画像を入力してください。`))
-            const contentImage = await loadImage(contentImgUrl);
-            const imgAttachment = GenerateDragonImage({ subtitle, content: contentImage, balloonImage, dragonImage });
-            return await interaction.reply({ files: [imgAttachment] });
-          case "text_image":
-            if (!content || !contentImgUrl) return await SendReply(interaction, GenerateText(`内容と画像を入力してください。`))
-            const figureImg = await loadImage(contentImgUrl);
-            const textImgAttachment = GenerateDragonImageAndText({ subtitle, content, contentImg: figureImg, balloonImage, dragonImage });
-            return await interaction.reply({ files: [textImgAttachment] });
-        }
+    handler: async (interaction) => {
+      const subtitle = interaction.options.getString("title")
+      const content = interaction.options.getString("content")
+      const contentImgUrl = interaction.options.getAttachment("image")?.url
+      const balloonImage = await loadImage('./public/img/balloon.png');
+      const dragonImage = await loadImage('./public/img/dragon.png');
+      if (!subtitle) return await SendReply(interaction, GenerateText(`タイトルを入力してください。`))
+      switch (interaction.options.getString("type")) {
+        case "text":
+          if (!content) return await SendReply(interaction, GenerateText(`内容を入力してください。`))
+          const textAttachment = GenerateDragonText({ subtitle, content, balloonImage, dragonImage });
+          return await interaction.reply({ files: [textAttachment] });
+        case "image":
+          if (!contentImgUrl) return await SendReply(interaction, GenerateText(`画像を入力してください。`))
+          const contentImage = await loadImage(contentImgUrl);
+          const imgAttachment = GenerateDragonImage({ subtitle, content: contentImage, balloonImage, dragonImage });
+          return await interaction.reply({ files: [imgAttachment] });
+        case "text_image":
+          if (!content || !contentImgUrl) return await SendReply(interaction, GenerateText(`内容と画像を入力してください。`))
+          const figureImg = await loadImage(contentImgUrl);
+          const textImgAttachment = GenerateDragonImageAndText({ subtitle, content, contentImg: figureImg, balloonImage, dragonImage });
+          return await interaction.reply({ files: [textImgAttachment] });
       }
+    }
   }
 ]
 

@@ -1,5 +1,6 @@
-import { createCanvas, Image } from "canvas";
+import { Canvas, createCanvas, Image } from "canvas";
 import { AttachmentBuilder } from "discord.js";
+import { CanvasRenderingContext2D } from "canvas";
 
 type TextDragonType = {
 	subtitle: string;
@@ -23,36 +24,70 @@ type ImageTextDragonType = {
 	dragonImage: Image;
 }
 
+type DragonBaseType = {
+	canvas: Canvas;
+	context: CanvasRenderingContext2D;
+	subtitle: string;
+	balloonImage: Image;
+	dragonImage: Image;
+}
+
 const fontSize = 90;
 const fontStyle = '"GenJyuuGothic-Normal", sans-serif'
 
-export function GenerateDragonText({ subtitle, content, balloonImage, dragonImage }: TextDragonType): AttachmentBuilder {
-	const canvas = createCanvas(balloonImage.width, balloonImage.height);
-	const context = canvas.getContext('2d');
+function adjustText(context: CanvasRenderingContext2D, text: string, width: number, height: number, followWidth?: number) {
+	const TextWidth = context.measureText(text).width;
+	if (TextWidth > width * 0.9) {
+		context.font = `${(width * 0.9 / TextWidth) * fontSize}px ${fontStyle}`;
+	}
+	context.fillText(text, (followWidth ?? 0) + (width - context.measureText(text).width) / 2, height);
+	context.font = `${fontSize}px ${fontStyle}`;
+}
+
+function adjustTexts(context: CanvasRenderingContext2D, texts: string[], width: number, height: number, followWidth?: number, optionFontSize?: number) {
+	const targetFontSize = optionFontSize ?? fontSize;
+	const maxLineWidth = Math.max(...texts.map(text => context.measureText(text).width));
+	const formatTextSize = () => {
+		let size = targetFontSize;
+		if (maxLineWidth > width * 0.9) {
+			size = (width * 0.9 / maxLineWidth) * targetFontSize;
+		}
+		if (texts.length * size > 400) {
+			size = 400 / texts.length * 0.9;
+		}
+		return size;
+	}
+	const formatSize = formatTextSize();
+	context.font = `${formatSize}px ${fontStyle}`;
+	for (let i = 0; i < texts.length; i++) {
+		context.fillText(texts[i], (followWidth ?? 0) + (width - context.measureText(texts[i]).width) / 2, (height - formatSize * texts.length / 2) + i * formatSize);
+	}
+	context.font = `${targetFontSize}px ${fontStyle}`;
+}
+
+
+function GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage }: DragonBaseType) {
 	context.fillStyle = 'rgb( 255, 255, 255)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(balloonImage, 0, 0, canvas.width, canvas.height);
 	context.drawImage(dragonImage, 0, 0, canvas.width, canvas.height);
 	context.font = `${fontSize}px ${fontStyle}`;
 	context.fillStyle = 'black';
-	const lines = content.split('\\n');
-	for (let i = 0; i < lines.length; i++) {
-		context.fillText(lines[i], 175 + (500 - context.measureText(lines[i]).width) / 2, (400 - fontSize * lines.length / 2) + i * fontSize);
-	}
-	context.fillText(subtitle, (canvas.width - context.measureText(subtitle).width) / 2, 844);
+	adjustText(context, subtitle, canvas.width, 844);
+}
+
+export function GenerateDragonText({ subtitle, content, balloonImage, dragonImage }: TextDragonType): AttachmentBuilder {
+	const canvas = createCanvas(balloonImage.width, balloonImage.height);
+	const context = canvas.getContext('2d');
+	GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
+	adjustTexts(context, content.split('\\n'), 500, 350, 175);
 	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
 }
 
 export function GenerateDragonImage({ subtitle, content, balloonImage, dragonImage }: ImageDragonType): AttachmentBuilder {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
-	context.fillStyle = 'rgb( 255, 255, 255)';
-	context.fillRect(0, 0, canvas.width, canvas.height);
-	context.drawImage(balloonImage, 0, 0, canvas.width, canvas.height);
-	context.drawImage(dragonImage, 0, 0, canvas.width, canvas.height);
-	context.font = `${fontSize}px ${fontStyle}`;
-	context.fillStyle = 'black';
-	context.fillText(subtitle, (canvas.width - context.measureText(subtitle).width) / 2, 844);
+	GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	const [width, height] = calcContentSize(content.width, content.height, dragonImage.height / 3);
 	context.drawImage(content, 425 - width / 2, 300 - height / 2, width, height);
 	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
@@ -61,21 +96,15 @@ export function GenerateDragonImage({ subtitle, content, balloonImage, dragonIma
 export function GenerateDragonImageAndText({ subtitle, content, contentImg, balloonImage, dragonImage }: ImageTextDragonType): AttachmentBuilder {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
-	context.fillStyle = 'rgb( 255, 255, 255)';
-	context.fillRect(0, 0, canvas.width, canvas.height);
-	context.drawImage(balloonImage, 0, 0, canvas.width, canvas.height);
-	context.drawImage(dragonImage, 0, 0, canvas.width, canvas.height);
-	context.font = `${fontSize}px ${fontStyle}`;
-	context.fillStyle = 'black';
-	context.fillText(subtitle, (canvas.width - context.measureText(subtitle).width) / 2, 844);
+	GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	const [width, height] = calcContentSize(contentImg.width, contentImg.height, dragonImage.height / 4);
 	context.drawImage(contentImg, 425 - width / 2, 250 - height / 2, width, height);
 	context.font = `${fontSize - 15}px ${fontStyle}`;
-	context.fillText(content, 175 + (500 - context.measureText(content).width) / 2, 250 + height / 2 + fontSize - 15)
+	adjustTexts(context, content.split('\\n'), 500, 500, 175, fontSize - 15);
 	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
 }
 
-function calcContentSize(width: number, height:number, size: number): [number, number] {
+function calcContentSize(width: number, height: number, size: number): [number, number] {
 	const ratio = width / height;
 	if (ratio > 1) {
 		return [size * ratio, size];
