@@ -66,7 +66,7 @@ function adjustTexts(context: CanvasRenderingContext2D, texts: string[], width: 
 }
 
 
-function GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage }: DragonBaseType) {
+function generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage }: DragonBaseType) {
 	context.fillStyle = 'rgb( 255, 255, 255)';
 	context.fillRect(0, 0, canvas.width, canvas.height);
 	context.drawImage(balloonImage, 0, 0, canvas.width, canvas.height);
@@ -76,27 +76,27 @@ function GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonIma
 	adjustText(context, subtitle, canvas.width, 844);
 }
 
-export function GenerateDragonText({ subtitle, content, balloonImage, dragonImage }: TextDragonType): AttachmentBuilder {
+function GenerateDragonText({ subtitle, content, balloonImage, dragonImage }: TextDragonType): AttachmentBuilder {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
-	GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
+	generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	adjustTexts(context, content.split('\\n'), 500, 350, 175);
 	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
 }
 
-export function GenerateDragonImage({ subtitle, content, balloonImage, dragonImage }: ImageDragonType): AttachmentBuilder {
+function GenerateDragonImage({ subtitle, content, balloonImage, dragonImage }: ImageDragonType): AttachmentBuilder {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
-	GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
+	generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	const [width, height] = calcContentSize(content.width, content.height, dragonImage.height / 3);
 	context.drawImage(content, 425 - width / 2, 300 - height / 2, width, height);
 	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
 }
 
-export function GenerateDragonImageAndText({ subtitle, content, contentImg, balloonImage, dragonImage }: ImageTextDragonType): AttachmentBuilder {
+function GenerateDragonImageAndText({ subtitle, content, contentImg, balloonImage, dragonImage }: ImageTextDragonType): AttachmentBuilder {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
-	GenerateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
+	generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	const [width, height] = calcContentSize(contentImg.width, contentImg.height, dragonImage.height / 4);
 	context.drawImage(contentImg, 425 - width / 2, 250 - height / 2, width, height);
 	context.font = `${fontSize - 15}px ${fontStyle}`;
@@ -112,3 +112,5 @@ function calcContentSize(width: number, height: number, size: number): [number, 
 		return [size, size / ratio];
 	}
 }
+
+export { GenerateDragonText, GenerateDragonImage, GenerateDragonImageAndText }

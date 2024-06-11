@@ -1,4 +1,4 @@
-import { ActionRowBuilder, BaseGuildTextChannel, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, MessageCreateOptions } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, BaseGuildTextChannel, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, MessageCreateOptions } from "discord.js";
 import { styleText } from "util";
 
 function GenerateText(text: string, ephemeral?: true) {
@@ -26,6 +26,10 @@ function GenerateButton(id: string, label: string, style: ButtonStyle) {
 	return {components: [actionRow]};
 }
 
+function GenerateFile(file: AttachmentBuilder) {
+	return {files: [file]};
+}
+
 async function SendMessage(channel: BaseGuildTextChannel, data: MessageCreateOptions) {
 	sendLog(data);
 	await channel.send(data);
@@ -43,4 +47,4 @@ function sendLog(data: any) {
 	console.log(styleText('white', `内容: ${text}\n`));
 }
 
-export { GenerateText, GenerateEmbed, GenerateButton, SendMessage, SendReply};
+export { GenerateText, GenerateEmbed, GenerateButton, GenerateFile, SendMessage, SendReply};
