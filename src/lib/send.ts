@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, BaseGuildTextChannel, ButtonBuilder, ButtonStyle, ColorResolvable, EmbedBuilder, MessageCreateOptions } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, BaseGuildTextChannel, ButtonBuilder, ButtonStyle, ChatInputCommandInteraction, ColorResolvable, EmbedBuilder, InteractionReplyOptions, InteractionResponse, MessageCreateOptions, MessagePayloadOption, WebhookMessageEditOptions } from "discord.js";
 import { styleText } from "util";
 
 function GenerateText(text: string, ephemeral?: true) {
@@ -32,19 +32,29 @@ function GenerateFile(file: AttachmentBuilder) {
 
 async function SendMessage(channel: BaseGuildTextChannel, data: MessageCreateOptions) {
 	sendLog(data);
-	await channel.send(data);
+	return await channel.send(data);
 }
 
-async function SendReply(interaction: any, data: MessageCreateOptions) {
+async function SendReply(interaction: ChatInputCommandInteraction, data: InteractionReplyOptions): Promise<InteractionResponse> {
 	sendLog(data);
-	await interaction.reply(data);
+	return await interaction.reply(data);
 }
 
-function sendLog(data: any) {
-	const text = typeof data === 'object' ? JSON.stringify(data, null, 1) : data;
+async function SendEdit(interaction: InteractionResponse, data: WebhookMessageEditOptions) {
+	sendLog(data);
+	return await interaction.edit(data);
+}
+
+function sendLog(data: MessagePayloadOption) {
+	const text = typeof data === 'object' && !(data.files) ? JSON.stringify(data, null, 1) : data;
 	console.log(styleText('bgWhiteBright', styleText('black','----- Send Log -----')));
 	console.log(styleText('yellow', `日付: ${new Date().toLocaleString()}`));
-	console.log(styleText('white', `内容: ${text}\n`));
+	if (typeof text === 'string') {
+		console.log(styleText('white', `内容: ${text}\n`));
+	} else if (data.files && data.files[0] instanceof AttachmentBuilder) {
+		console.log(styleText('white', `ファイル名: ${JSON.stringify(data.files[0].name, null, 1)}`));
+		console.log(styleText('white', `画像ファイルのため表示できません\n`));
+	}
 }
 
-export { GenerateText, GenerateEmbed, GenerateButton, GenerateFile, SendMessage, SendReply};
+export { GenerateText, GenerateEmbed, GenerateButton, GenerateFile, SendMessage, SendReply, SendEdit};

@@ -1,5 +1,4 @@
-import { Canvas, createCanvas, Image } from "canvas";
-import { AttachmentBuilder } from "discord.js";
+import { Canvas, createCanvas, Image, PNGStream } from "canvas";
 import { CanvasRenderingContext2D } from "canvas";
 
 type TextDragonType = {
@@ -76,24 +75,24 @@ function generateDragonBase({ canvas, context, subtitle, balloonImage, dragonIma
 	adjustText(context, subtitle, canvas.width, 844);
 }
 
-function GenerateDragonText({ subtitle, content, balloonImage, dragonImage }: TextDragonType): AttachmentBuilder {
+function GenerateDragonText({ subtitle, content, balloonImage, dragonImage }: TextDragonType): PNGStream {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
 	generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	adjustTexts(context, content.split('\\n'), 500, 350, 175);
-	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
+	return canvas.createPNGStream();
 }
 
-function GenerateDragonImage({ subtitle, content, balloonImage, dragonImage }: ImageDragonType): AttachmentBuilder {
+function GenerateDragonImage({ subtitle, content, balloonImage, dragonImage }: ImageDragonType): PNGStream {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
 	generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
 	const [width, height] = calcContentSize(content.width, content.height, dragonImage.height / 3);
 	context.drawImage(content, 425 - width / 2, 300 - height / 2, width, height);
-	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
+	return canvas.createPNGStream();
 }
 
-function GenerateDragonImageAndText({ subtitle, content, contentImg, balloonImage, dragonImage }: ImageTextDragonType): AttachmentBuilder {
+function GenerateDragonImageAndText({ subtitle, content, contentImg, balloonImage, dragonImage }: ImageTextDragonType): PNGStream {
 	const canvas = createCanvas(balloonImage.width, balloonImage.height);
 	const context = canvas.getContext('2d');
 	generateDragonBase({ canvas, context, subtitle, balloonImage, dragonImage });
@@ -101,7 +100,7 @@ function GenerateDragonImageAndText({ subtitle, content, contentImg, balloonImag
 	context.drawImage(contentImg, 425 - width / 2, 250 - height / 2, width, height);
 	context.font = `${fontSize - 15}px ${fontStyle}`;
 	adjustTexts(context, content.split('\\n'), 500, 500, 175, fontSize - 15);
-	return new AttachmentBuilder(canvas.createPNGStream(), { name: 'hapyou-dragon.png' });
+	return canvas.createPNGStream();
 }
 
 function calcContentSize(width: number, height: number, size: number): [number, number] {

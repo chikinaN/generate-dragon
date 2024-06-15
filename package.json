@@ -19,9 +19,11 @@
   },
   "homepage": "https://github.com/chikinaN/generate-dragon#readme",
   "dependencies": {
+    "@types/fluent-ffmpeg": "^2.1.24",
     "@types/node": "^20.12.12",
     "canvas": "^2.11.2",
     "discord.js": "^14.15.2",
+    "fluent-ffmpeg": "^2.1.3",
     "typescript": "^5.4.5"
   },
   "devDependencies": {
